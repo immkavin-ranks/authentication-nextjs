@@ -42,9 +42,9 @@ export async function signup(state: FormState, formData: FormData) {
       name,
       email,
       password: hashedPassword,
-      user_id: uuidv4(),
+      uuid: uuidv4(),
     })
-    .returning({ user_id: users.user_id });
+    .returning({ uuid: users.uuid });
 
   const user = data[0];
 
@@ -56,7 +56,7 @@ export async function signup(state: FormState, formData: FormData) {
 
   // TODO:
   // 4. Create user session
-  await createSession(user.user_id);
+  await createSession(user.uuid);
 
   // 5. Redirect user
   redirect("/profile");
