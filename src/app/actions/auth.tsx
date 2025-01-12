@@ -5,10 +5,9 @@ import bcrypt from "bcryptjs";
 import { users } from "@/db/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { createSession } from "@/app/lib/session";
+import { createSession, deleteSession } from "@/app/lib/session";
 import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
-
 
 const client = postgres(process.env.DATABASE_URL!);
 const db = drizzle({ client });
@@ -61,4 +60,9 @@ export async function signup(state: FormState, formData: FormData) {
 
   // 5. Redirect user
   redirect("/profile");
+}
+
+export async function logout() {
+  deleteSession();
+  redirect("/login");
 }
