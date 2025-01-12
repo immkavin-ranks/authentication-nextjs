@@ -5,6 +5,10 @@ import bcrypt from "bcryptjs";
 import { users } from "@/db/schema";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import { createSession } from "@/app/lib/session";
+import { redirect } from "next/navigation";
+import { v4 as uuidv4 } from "uuid";
+
 
 const client = postgres(process.env.DATABASE_URL!);
 const db = drizzle({ client });
@@ -39,8 +43,9 @@ export async function signup(state: FormState, formData: FormData) {
       name,
       email,
       password: hashedPassword,
+      user_id: uuidv4(),
     })
-    .returning({ id: users.id });
+    .returning({ user_id: users.user_id });
 
   const user = data[0];
 
@@ -52,5 +57,8 @@ export async function signup(state: FormState, formData: FormData) {
 
   // TODO:
   // 4. Create user session
+  await createSession(user.user_id);
+
   // 5. Redirect user
+  redirect("/profile");
 }
