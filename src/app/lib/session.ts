@@ -4,15 +4,16 @@ import { SessionPayload } from "@/app/lib/definitions";
 import { cookies } from "next/headers";
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
-import { sessions } from "@/db/schema";
+import { sessions, users } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 const secretKey = process.env.SESSION_SECRET;
 const encodedKey = new TextEncoder().encode(secretKey);
 
 const client = postgres(process.env.DATABASE_URL!);
-const db = drizzle({ client });
+const db = drizzle(client, {schema: {users}});
 
-export async function encrypt(payload: SessionPayload) {
+export async function encrypt(payload: SessionPayload): Promise<string> {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -20,14 +21,15 @@ export async function encrypt(payload: SessionPayload) {
     .sign(encodedKey);
 }
 
-export async function decrypt(session: string | undefined = "") {
+export async function decrypt(session: string | undefined = ""): Promise<SessionPayload | null> {
   try {
     const { payload } = await jwtVerify(session, encodedKey, {
       algorithms: ["HS256"],
     });
-    return payload;
+    return payload as SessionPayload;
   } catch (error) {
     console.log("Failed to verify session: " + error);
+    return null;
   }
 }
 
@@ -46,8 +48,20 @@ export async function createSession(id: number) {
 
   const sessionId = data[0].id;
 
+  const user_data = await db.query.users.findMany({
+    where: eq(users.id, id), 
+    columns: {
+      id: true,
+      is_admin: true,
+    }
+  });
+
+  const {id: userId, is_admin: isAdmin} = user_data[0];
+
+  const role = isAdmin ? "admin" : "user";
+
   // 2. Encrypt the session ID
-  const session = await encrypt({ sessionId, expiresAt });
+  const session = await encrypt({ sessionId, expiresAt, user: {userId, role} });
 
   // 3. Store the session in cookies for optimistic auth checks
   const cookieStore = await cookies();
