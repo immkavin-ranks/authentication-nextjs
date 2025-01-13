@@ -1,4 +1,4 @@
-import { bigint, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { bigint, boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity().unique(),
@@ -6,6 +6,8 @@ export const users = pgTable("users", {
   email: text().notNull().unique(),
   password: text().notNull(),
   uuid: uuid().primaryKey().unique(),
+  phonenumber: text(),
+  is_admin: boolean().default(false).notNull(),
 });
 
 export const sessions = pgTable("sessions", {
