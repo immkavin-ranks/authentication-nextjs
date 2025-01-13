@@ -44,7 +44,7 @@ export async function signup(state: FormState, formData: FormData) {
       password: hashedPassword,
       uuid: uuidv4(),
     })
-    .returning({ uuid: users.uuid });
+    .returning({ id: users.id });
 
   const user = data[0];
 
@@ -56,7 +56,7 @@ export async function signup(state: FormState, formData: FormData) {
 
   // TODO:
   // 4. Create user session
-  await createSession(user.uuid);
+  await createSession(user.id);
 
   // 5. Redirect user
   redirect("/profile");

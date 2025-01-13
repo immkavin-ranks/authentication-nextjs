@@ -31,14 +31,14 @@ export async function decrypt(session: string | undefined = "") {
   }
 }
 
-export async function createSession(uuid: string) {
+export async function createSession(id: number) {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
   // 1. Create a session in the database
   const data = await db
     .insert(sessions)
     .values({
-      user_id: uuid,
+      user_id: id,
       expires_at: expiresAt,
     })
     // Return the session ID
