@@ -32,4 +32,8 @@ export type FormState =
 export type SessionPayload = {
   sessionId: number,
   expiresAt: Date,
+  user: {
+    userId: number,
+    role: "admin" | "user",
+  }
 };
